@@ -97,7 +97,7 @@ export default async function HomePage() {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-2xl font-bold">Nuestros Productos</h2>
-                <p className="text-muted-foreground">Elaborados con ingredientes seleccionados</p>
+                <p className="text-muted-foreground">{config?.productos_subtitle ?? "Elaborados con ingredientes seleccionados"}</p>
               </div>
               <Link href="/productos">
                 <Button variant="outline">
@@ -113,7 +113,7 @@ export default async function HomePage() {
 
       {/* Promociones activas */}
       {activePromotions.length > 0 && (
-        <PromotionBanner promotions={activePromotions} />
+        <PromotionBanner promotions={activePromotions} subtitle={config?.promociones_subtitle} />
       )}
 
       {/* Cómo hacer un pedido */}

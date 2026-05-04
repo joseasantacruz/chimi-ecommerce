@@ -20,8 +20,13 @@ export function Header({ config }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<{ email: string | undefined } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchRole = async (userId: string) => {
@@ -54,7 +59,7 @@ export function Header({ config }: HeaderProps) {
     window.location.href = "/";
   };
 
-  const count = itemCount();
+  const count = mounted ? itemCount() : 0;
 
   return (
     <>

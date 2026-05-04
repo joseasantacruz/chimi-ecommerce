@@ -10,9 +10,10 @@ type PromotionWithItems = promotions & {
 
 interface PromotionBannerProps {
   promotions: PromotionWithItems[];
+  subtitle?: string | null;
 }
 
-export function PromotionBanner({ promotions }: PromotionBannerProps) {
+export function PromotionBanner({ promotions, subtitle }: PromotionBannerProps) {
   if (promotions.length === 0) return null;
 
   return (
@@ -25,7 +26,7 @@ export function PromotionBanner({ promotions }: PromotionBannerProps) {
             </div>
             <div>
               <h2 className="text-2xl font-bold">Promociones Activas</h2>
-              <p className="text-sm text-muted-foreground">Ofertas especiales por tiempo limitado</p>
+              <p className="text-sm text-muted-foreground">{subtitle ?? "Ofertas especiales por tiempo limitado"}</p>
             </div>
           </div>
           <Link href="/promociones">
