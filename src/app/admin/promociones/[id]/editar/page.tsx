@@ -9,7 +9,10 @@ export default async function EditPromotionPage({ params }: { params: { id: stri
   const [promotion, products] = await Promise.all([
     prisma.promotions.findUnique({
       where: { id: params.id },
-      include: { promotion_items: { include: { product: true } } },
+      include: {
+        promotion_items: { include: { product: true } },
+        promotion_images: { orderBy: { orden: "asc" } },
+      },
     }),
     prisma.products.findMany({ where: { activo: true }, orderBy: { nombre: "asc" } }),
   ]);

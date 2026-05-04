@@ -13,15 +13,19 @@ model store_config {
   store_name        String
   slogan            String?
   logo_url          String?
+  hero_image_url    String?
   primary_color     String   @default("#C8511B")
   secondary_color   String   @default("#F5A623")
+  button_color      String   @default("#C8511B")
   contact_email     String?
   contact_phone     String?
   contact_whatsapp  String?
   address           String?
-  facebook_url      String?
-  instagram_url     String?
-  updated_at        DateTime @updatedAt
+  facebook_url         String?
+  instagram_url        String?
+  productos_subtitle   String?
+  promociones_subtitle String?
+  updated_at           DateTime @updatedAt
 }
 
 enum UserRole {
@@ -103,7 +107,19 @@ model promotions {
   updated_at          DateTime          @updatedAt
 
   promotion_items     promotion_items[]
+  promotion_images    promotion_images[]
   order_items         order_items[]
+}
+
+model promotion_images {
+  id            String     @id @default(cuid())
+  promotion_id  String
+  url           String
+  alt_text      String?
+  orden         Int        @default(0)
+  is_primary    Boolean    @default(false)
+
+  promotion     promotions @relation(fields: [promotion_id], references: [id], onDelete: Cascade)
 }
 
 model promotion_items {

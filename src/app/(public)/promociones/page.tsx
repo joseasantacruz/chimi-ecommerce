@@ -53,12 +53,16 @@ function PromotionsSkeleton() {
   );
 }
 
-export default function PromotionsPage() {
+export default async function PromotionsPage() {
+  const config = await prisma.store_config.findFirst();
+
   return (
     <div className="container py-12">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Promociones</h1>
-        <p className="text-muted-foreground mt-2">Packs especiales con descuentos exclusivos</p>
+        <p className="text-muted-foreground mt-2">
+          {config?.promociones_subtitle ?? "Packs especiales con descuentos exclusivos"}
+        </p>
       </div>
       <Suspense fallback={<PromotionsSkeleton />}>
         <PromotionsContent />

@@ -18,12 +18,16 @@ async function ProductsContent() {
   return <ProductGrid products={products} />;
 }
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const config = await prisma.store_config.findFirst();
+
   return (
     <div className="container py-12">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Nuestros Productos</h1>
-        <p className="text-muted-foreground mt-2">Elaborados con ingredientes frescos y naturales</p>
+        <p className="text-muted-foreground mt-2">
+          {config?.productos_subtitle ?? "Elaborados con ingredientes frescos y naturales"}
+        </p>
       </div>
       <Suspense fallback={<ProductGridSkeleton />}>
         <ProductsContent />

@@ -13,7 +13,6 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { productSchema, type ProductFormValues } from "@/lib/validations/product";
 import { generateSlug } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import type { products, product_images } from "@prisma/client";
 
@@ -36,7 +35,6 @@ export function ProductForm({ product }: ProductFormProps) {
     product?.images.map((img) => ({ url: img.url, id: img.id, is_primary: img.is_primary })) ?? []
   );
   const router = useRouter();
-  const supabase = createClient();
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -93,13 +91,14 @@ export function ProductForm({ product }: ProductFormProps) {
       if (img.file) {
         const ext = img.file.name.split(".").pop();
         const path = `${productId}/${Date.now()}.${ext}`;
-        const { error } = await supabase.storage
-          .from("products")
-          .upload(path, img.file, { upsert: true });
-
-        if (!error) {
-          const { data } = supabase.storage.from("products").getPublicUrl(path);
-          uploadedUrls.push({ url: data.publicUrl, is_primary: img.is_primary });
+        const formData = new FormData();
+        formData.append("file", img.file);
+        formData.append("bucket", "products");
+        formData.append("path", path);
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        if (res.ok) {
+          const { url } = await res.json();
+          uploadedUrls.push({ url, is_primary: img.is_primary });
         }
       } else {
         uploadedUrls.push({ url: img.url, is_primary: img.is_primary });

@@ -31,7 +31,7 @@ async function main() {
   console.log("✓ store_config created");
 
   // 2. Admin user via Supabase Auth
-  const adminEmail = "admin@artisanecommerce.com";
+  const adminEmail = "admin@elchimidejuancho.com";
   const adminPassword = "Admin1234!";
 
   const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();

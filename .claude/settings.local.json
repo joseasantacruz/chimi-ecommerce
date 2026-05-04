@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs -I{} basename {} echo \"\" echo \"=== PUBLIC DIR ===\")"
+      "Bash(xargs -I{} basename {} echo \"\" echo \"=== PUBLIC DIR ===\")",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(npx prisma *)"
     ]
   }
 }

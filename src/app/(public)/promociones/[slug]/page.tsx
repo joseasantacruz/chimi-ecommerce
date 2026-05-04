@@ -3,20 +3,22 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Minus, Plus, ShoppingCart } from "lucide-react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
+import { ImageGallery } from "@/components/products/ImageGallery";
 import { useCart } from "@/hooks/useCart";
 import { formatPYG } from "@/lib/utils";
 import { toast } from "sonner";
-import type { promotions, promotion_items, products, product_images } from "@prisma/client";
+import type { promotions, promotion_items, products, product_images, promotion_images } from "@prisma/client";
 
 type PromotionDetail = promotions & {
   promotion_items: (promotion_items & {
     product: products & { images: product_images[] };
   })[];
+  promotion_images: promotion_images[];
 };
 
 export default function PromotionDetailPage() {
@@ -73,12 +75,20 @@ export default function PromotionDetailPage() {
   );
   const savings = regularTotal - Number(promo.precio_promocional);
 
+  const galleryImages = promo.promotion_images?.length > 0
+    ? promo.promotion_images.sort((a, b) => a.orden - b.orden)
+    : promo.imagen_url
+      ? [{ id: "main", url: promo.imagen_url, alt_text: promo.nombre, is_primary: true }]
+      : [];
+
   return (
     <div className="container py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        {promo.imagen_url && (
-          <div className="relative aspect-video rounded-lg overflow-hidden">
-            <Image src={promo.imagen_url} alt={promo.nombre} fill className="object-cover" />
+        {galleryImages.length > 0 ? (
+          <ImageGallery images={galleryImages} name={promo.nombre} aspectRatio="video" />
+        ) : (
+          <div className="aspect-video rounded-lg bg-gray-100 flex items-center justify-center text-muted-foreground">
+            Sin imagen
           </div>
         )}
 
@@ -93,7 +103,9 @@ export default function PromotionDetailPage() {
           )}
 
           <div>
-            <p className="text-sm text-muted-foreground">Precio regular: <span className="line-through">{formatPYG(regularTotal)}</span></p>
+            <p className="text-sm text-muted-foreground">
+              Precio regular: <span className="line-through">{formatPYG(regularTotal)}</span>
+            </p>
             <p className="text-3xl font-bold text-green-700">{formatPYG(Number(promo.precio_promocional))}</p>
             <Badge className="bg-green-600 text-white mt-2">Ahorras {formatPYG(savings)}</Badge>
           </div>
@@ -106,7 +118,7 @@ export default function PromotionDetailPage() {
               {promo.promotion_items.map((item) => (
                 <li key={item.id} className="flex items-center gap-3">
                   {item.product.images[0] && (
-                    <div className="relative h-10 w-10 rounded overflow-hidden">
+                    <div className="relative h-10 w-10 rounded overflow-hidden flex-shrink-0">
                       <Image src={item.product.images[0].url} alt={item.product.nombre} fill className="object-cover" />
                     </div>
                   )}

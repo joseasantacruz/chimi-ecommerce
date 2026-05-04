@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, CheckCircle, ShoppingBag, Phone, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductGrid } from "@/components/products/ProductGrid";
@@ -42,10 +43,22 @@ export default async function HomePage() {
     <>
       {/* Hero */}
       <section
-        className="relative py-20 md:py-32 text-white text-center"
+        className="relative py-20 md:py-32 text-white text-center overflow-hidden"
         style={{ backgroundColor: config?.primary_color ?? "#C8511B" }}
       >
-        <div className="container">
+        {config?.hero_image_url && (
+          <>
+            <Image
+              src={config.hero_image_url}
+              alt="Hero background"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/50" />
+          </>
+        )}
+        <div className="container relative z-10">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
             {config?.store_name ?? "Bienvenido"}
           </h1>
@@ -63,8 +76,13 @@ export default async function HomePage() {
             </Link>
             {activePromotions.length > 0 && (
               <Link href="/promociones">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                <Button
+                  size="lg"
+                  className="border-2 border-white bg-transparent text-white hover:bg-white hover:text-gray-900"
+                  style={config?.secondary_color ? { borderColor: "white" } : undefined}
+                >
                   Ver promociones
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             )}

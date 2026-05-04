@@ -24,25 +24,34 @@ export function Header({ config }: HeaderProps) {
   const supabase = createClient();
 
   useEffect(() => {
+    const fetchRole = async (userId: string) => {
+      const { data: ud } = await supabase.from("users").select("rol").eq("id", userId).single();
+      setIsAdmin(ud?.rol === "admin");
+    };
+
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         setUser({ email: data.user.email });
-        supabase
-          .from("users")
-          .select("rol")
-          .eq("id", data.user.id)
-          .single()
-          .then(({ data: ud }) => {
-            if (ud?.rol === "admin") setIsAdmin(true);
-          });
+        fetchRole(data.user.id);
       }
     });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      if (!session) {
+        setUser(null);
+        setIsAdmin(false);
+      } else {
+        setUser({ email: session.user.email });
+        fetchRole(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
+    window.location.href = "/";
   };
 
   const count = itemCount();

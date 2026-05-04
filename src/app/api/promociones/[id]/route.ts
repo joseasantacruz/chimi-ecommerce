@@ -7,6 +7,7 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
     where: { OR: [{ id: params.id }, { slug: params.id }] },
     include: {
       promotion_items: { include: { product: { include: { images: true } } } },
+      promotion_images: { orderBy: { orden: "asc" } },
     },
   });
   if (!promo) return NextResponse.json({ error: "Not found" }, { status: 404 });

@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { User, MapPin, ShoppingBag } from "lucide-react";
+import { User, MapPin, ShoppingBag, LayoutDashboard } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 const navItems = [
   { href: "/perfil", icon: User, label: "Mi Perfil" },
@@ -7,7 +9,19 @@ const navItems = [
   { href: "/perfil/pedidos", icon: ShoppingBag, label: "Mis Pedidos" },
 ];
 
-export default function PerfilLayout({ children }: { children: React.ReactNode }) {
+export default async function PerfilLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let isAdmin = false;
+  if (user) {
+    const userData = await prisma.users.findUnique({
+      where: { id: user.id },
+      select: { rol: true },
+    });
+    isAdmin = userData?.rol === "admin";
+  }
+
   return (
     <div className="border-b bg-muted/40">
       <div className="container py-4">
@@ -22,6 +36,15 @@ export default function PerfilLayout({ children }: { children: React.ReactNode }
               {item.label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-orange-600 hover:bg-background hover:text-orange-700 transition-colors"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Panel de administración
+            </Link>
+          )}
         </nav>
       </div>
       {children}
