@@ -73,7 +73,7 @@ export default function ProductDetailPage() {
   return (
     <div className="container py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        <ImageGallery images={product.images} productName={product.nombre} />
+        <ImageGallery images={product.images} name={product.nombre} />
 
         <div className="space-y-6">
           <div>
