@@ -39,6 +39,7 @@ interface OrderStatusUpdateProps {
   }>;
   total: number;
   contactWhatsapp?: string;
+  contactPhone?: string;
 }
 
 export function OrderStatusUpdate({
@@ -51,6 +52,7 @@ export function OrderStatusUpdate({
   items,
   total,
   contactWhatsapp,
+  contactPhone,
 }: OrderStatusUpdateProps) {
   return (
     <Html>
@@ -98,15 +100,25 @@ export function OrderStatusUpdate({
               </Column>
             </Row>
 
-            {contactWhatsapp && (
+            {(contactWhatsapp || contactPhone) && (
               <>
                 <Hr />
                 <Text style={{ color: "#666", fontSize: "14px" }}>
-                  ¿Tenés dudas?{" "}
-                  <a href={`https://wa.me/${contactWhatsapp.replace(/\D/g, "")}`} style={{ color: primaryColor }}>
-                    Contactanos por WhatsApp
-                  </a>
+                  ¿Tenés dudas? Comunicate con nosotros:
                 </Text>
+                {contactPhone && (
+                  <Text style={{ color: "#555", fontSize: "14px", margin: "4px 0" }}>
+                    📞 Teléfono: {contactPhone}
+                  </Text>
+                )}
+                {contactWhatsapp && (
+                  <Text style={{ color: "#555", fontSize: "14px", margin: "4px 0" }}>
+                    💬{" "}
+                    <a href={`https://wa.me/${contactWhatsapp.replace(/\D/g, "")}`} style={{ color: primaryColor }}>
+                      WhatsApp: {contactWhatsapp}
+                    </a>
+                  </Text>
+                )}
               </>
             )}
           </Section>

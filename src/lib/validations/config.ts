@@ -6,6 +6,7 @@ export const storeConfigSchema = z.object({
   primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Ingresá un color hex válido"),
   secondary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Ingresá un color hex válido"),
   button_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Ingresá un color hex válido"),
+  sender_email: z.string().email("Email inválido").optional().or(z.literal("")),
   contact_email: z.string().email("Email inválido").optional().or(z.literal("")),
   contact_phone: z.string().optional(),
   contact_whatsapp: z.string().optional(),

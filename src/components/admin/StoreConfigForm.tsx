@@ -35,6 +35,7 @@ export function StoreConfigForm({ config }: StoreConfigFormProps) {
       primary_color: config.primary_color,
       secondary_color: config.secondary_color,
       button_color: config.button_color,
+      sender_email: (config as typeof config & { sender_email?: string | null }).sender_email ?? "",
       contact_email: config.contact_email ?? "",
       contact_phone: config.contact_phone ?? "",
       contact_whatsapp: config.contact_whatsapp ?? "",
@@ -273,6 +274,14 @@ export function StoreConfigForm({ config }: StoreConfigFormProps) {
           <div className="space-y-4">
             <h3 className="font-semibold">Datos de contacto</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="sender_email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Correo de envíos a clientes</FormLabel>
+                  <FormControl><Input type="email" placeholder="noreply@tutienda.com" {...field} /></FormControl>
+                  <FormDescription>Se usa como remitente en emails de bienvenida y órdenes. Debe estar verificado en Resend.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
               <FormField control={form.control} name="contact_email" render={({ field }) => (
                 <FormItem><FormLabel>Email de contacto</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
               )} />

@@ -18,7 +18,7 @@ interface HeaderProps {
 export function Header({ config }: HeaderProps) {
   const { itemCount, toggleCart } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState<{ email: string | undefined } | null>(null);
+  const [user, setUser] = useState<{ email: string | undefined; nombre: string | null } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -29,25 +29,26 @@ export function Header({ config }: HeaderProps) {
   }, []);
 
   useEffect(() => {
-    const fetchRole = async (userId: string) => {
-      const { data: ud } = await supabase.from("users").select("rol").eq("id", userId).single();
+    const fetchProfile = async (userId: string) => {
+      const { data: ud } = await supabase.from("users").select("rol, nombre").eq("id", userId).single();
       setIsAdmin(ud?.rol === "admin");
+      return ud?.nombre ?? null;
     };
 
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (data.user) {
-        setUser({ email: data.user.email });
-        fetchRole(data.user.id);
+        const nombre = await fetchProfile(data.user.id);
+        setUser({ email: data.user.email, nombre });
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       if (!session) {
         setUser(null);
         setIsAdmin(false);
       } else {
-        setUser({ email: session.user.email });
-        fetchRole(session.user.id);
+        const nombre = await fetchProfile(session.user.id);
+        setUser({ email: session.user.email, nombre });
       }
     });
 
@@ -96,11 +97,6 @@ export function Header({ config }: HeaderProps) {
               <p className="font-bold text-lg leading-none" style={{ color: config?.primary_color }}>
                 {config?.store_name ?? "Tienda"}
               </p>
-              {config?.slogan && (
-                <p className="text-xs text-muted-foreground line-clamp-1 max-w-[200px]">
-                  {config.slogan}
-                </p>
-              )}
             </div>
           </Link>
 
@@ -136,7 +132,7 @@ export function Header({ config }: HeaderProps) {
                 <Link href="/perfil">
                   <Button variant="ghost" size="sm">
                     <User className="h-4 w-4 mr-1" />
-                    {user.email?.split("@")[0]}
+                    {user.nombre ?? user.email?.split("@")[0]}
                   </Button>
                 </Link>
                 <Button variant="outline" size="sm" onClick={handleLogout}>

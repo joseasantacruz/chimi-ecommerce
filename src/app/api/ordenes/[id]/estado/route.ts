@@ -42,6 +42,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   // Email al cliente
   try {
     const config = await prisma.store_config.findFirst();
+    const senderEmail = (config as typeof config & { sender_email?: string | null })?.sender_email;
+    const from = senderEmail
+      ? `${config?.store_name ?? "Tienda"} <${senderEmail}>`
+      : `${config?.store_name ?? "Tienda"} <onboarding@resend.dev>`;
+
     const emailHtml = String(render(
       React.createElement(OrderStatusUpdate, {
         storeName: config?.store_name ?? "Tienda",
@@ -57,11 +62,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         })),
         total: Number(currentOrder.total),
         contactWhatsapp: config?.contact_whatsapp ?? undefined,
+        contactPhone: config?.contact_phone ?? undefined,
       })
     ));
 
     await resend.emails.send({
-      from: `${config?.store_name ?? "Tienda"} <onboarding@resend.dev>`,
+      from,
       to: [currentOrder.user.email],
       subject: `Tu pedido #${currentOrder.id.slice(-8).toUpperCase()} fue actualizado - ${config?.store_name}`,
       html: emailHtml,

@@ -61,9 +61,7 @@ export function RegisterForm() {
       }),
     });
 
-    toast.success("Cuenta creada exitosamente");
-    router.push(redirect);
-    router.refresh();
+    router.push("/auth/verificacion-pendiente");
   };
 
   return (

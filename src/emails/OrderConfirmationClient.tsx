@@ -25,6 +25,7 @@ interface OrderConfirmationClientProps {
     precio_snapshot: number;
     subtotal: number;
   }>;
+  subtotal: number;
   total: number;
   address?: {
     alias: string;
@@ -34,6 +35,7 @@ interface OrderConfirmationClientProps {
     referencia?: string;
   } | null;
   contactWhatsapp?: string;
+  contactPhone?: string;
 }
 
 export function OrderConfirmationClient({
@@ -43,9 +45,11 @@ export function OrderConfirmationClient({
   orderId,
   orderDate,
   items,
+  subtotal,
   total,
   address,
   contactWhatsapp,
+  contactPhone,
 }: OrderConfirmationClientProps) {
   return (
     <Html>
@@ -53,7 +57,6 @@ export function OrderConfirmationClient({
       <Preview>Recibimos tu pedido #{orderId.slice(-8).toUpperCase()} - {storeName}</Preview>
       <Body style={{ fontFamily: "Arial, sans-serif", backgroundColor: "#f5f5f5", margin: 0, padding: "20px 0" }}>
         <Container style={{ maxWidth: "600px", margin: "0 auto", backgroundColor: "#ffffff", borderRadius: "8px", overflow: "hidden" }}>
-          {/* Header */}
           <Section style={{ backgroundColor: primaryColor, padding: "30px", textAlign: "center" }}>
             <Heading style={{ color: "#ffffff", margin: 0, fontSize: "24px" }}>{storeName}</Heading>
           </Section>
@@ -75,15 +78,19 @@ export function OrderConfirmationClient({
               </Text>
             </div>
 
-            {/* Items */}
             <Heading as="h3" style={{ color: "#333", borderBottom: "1px solid #eee", paddingBottom: "8px" }}>
-              Productos
+              Detalle del pedido
             </Heading>
 
             {items.map((item, index) => (
               <Row key={index} style={{ marginBottom: "8px" }}>
                 <Column>
-                  <Text style={{ margin: 0 }}>{item.nombre_snapshot} × {item.cantidad}</Text>
+                  <Text style={{ margin: 0 }}>
+                    {item.nombre_snapshot} × {item.cantidad}
+                  </Text>
+                  <Text style={{ margin: 0, fontSize: "12px", color: "#888" }}>
+                    {formatPYG(item.precio_snapshot)} c/u
+                  </Text>
                 </Column>
                 <Column style={{ textAlign: "right" }}>
                   <Text style={{ margin: 0, fontWeight: "bold" }}>{formatPYG(item.subtotal)}</Text>
@@ -92,18 +99,24 @@ export function OrderConfirmationClient({
             ))}
 
             <Hr />
+
+            <Row style={{ marginBottom: "4px" }}>
+              <Column><Text style={{ margin: 0, color: "#666" }}>Subtotal</Text></Column>
+              <Column style={{ textAlign: "right" }}>
+                <Text style={{ margin: 0, color: "#666" }}>{formatPYG(subtotal)}</Text>
+              </Column>
+            </Row>
             <Row>
               <Column>
-                <Text style={{ fontWeight: "bold", fontSize: "18px" }}>Total</Text>
+                <Text style={{ fontWeight: "bold", fontSize: "18px", margin: 0 }}>Total</Text>
               </Column>
               <Column style={{ textAlign: "right" }}>
-                <Text style={{ fontWeight: "bold", fontSize: "18px", color: primaryColor }}>
+                <Text style={{ fontWeight: "bold", fontSize: "18px", color: primaryColor, margin: 0 }}>
                   {formatPYG(total)}
                 </Text>
               </Column>
             </Row>
 
-            {/* Dirección */}
             {address && (
               <>
                 <Heading as="h3" style={{ color: "#333", marginTop: "24px" }}>Dirección de envío</Heading>
@@ -113,15 +126,25 @@ export function OrderConfirmationClient({
               </>
             )}
 
-            {contactWhatsapp && (
+            {(contactWhatsapp || contactPhone) && (
               <>
                 <Hr />
                 <Text style={{ color: "#666", fontSize: "14px" }}>
-                  ¿Tenés dudas? Escribinos al{" "}
-                  <a href={`https://wa.me/${contactWhatsapp.replace(/\D/g, "")}`} style={{ color: primaryColor }}>
-                    WhatsApp: {contactWhatsapp}
-                  </a>
+                  ¿Tenés dudas? Comunicate con nosotros:
                 </Text>
+                {contactPhone && (
+                  <Text style={{ color: "#555", fontSize: "14px", margin: "4px 0" }}>
+                    📞 Teléfono: {contactPhone}
+                  </Text>
+                )}
+                {contactWhatsapp && (
+                  <Text style={{ color: "#555", fontSize: "14px", margin: "4px 0" }}>
+                    💬{" "}
+                    <a href={`https://wa.me/${contactWhatsapp.replace(/\D/g, "")}`} style={{ color: primaryColor }}>
+                      WhatsApp: {contactWhatsapp}
+                    </a>
+                  </Text>
+                )}
               </>
             )}
           </Section>

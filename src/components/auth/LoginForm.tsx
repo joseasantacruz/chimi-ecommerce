@@ -26,13 +26,20 @@ export function LoginForm() {
 
   const onSubmit = async (values: LoginFormValues) => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     });
 
     if (error) {
       toast.error("Email o contraseña incorrectos");
+      setLoading(false);
+      return;
+    }
+
+    if (!data.user?.email_confirmed_at) {
+      await supabase.auth.signOut();
+      toast.error("Debés confirmar tu email antes de iniciar sesión. Revisá tu casilla de correo.");
       setLoading(false);
       return;
     }

@@ -21,6 +21,7 @@ model store_config {
   contact_phone     String?
   contact_whatsapp  String?
   address           String?
+  sender_email         String?
   facebook_url         String?
   instagram_url        String?
   productos_subtitle   String?

@@ -98,6 +98,11 @@ export async function POST(request: NextRequest) {
 
   // Enviar emails
   try {
+    const senderEmail = (config as typeof config & { sender_email?: string | null })?.sender_email;
+    const from = senderEmail
+      ? `${config?.store_name ?? "Tienda"} <${senderEmail}>`
+      : `${config?.store_name ?? "Tienda"} <onboarding@resend.dev>`;
+
     const emailItems = order.order_items.map((i) => ({
       nombre_snapshot: i.nombre_snapshot,
       cantidad: i.cantidad,
@@ -113,14 +118,22 @@ export async function POST(request: NextRequest) {
         orderId: order.id,
         orderDate: order.created_at.toISOString(),
         items: emailItems,
+        subtotal: Number(order.subtotal),
         total: Number(order.total),
-        address: order.address,
+        address: order.address ? {
+          alias: order.address.alias,
+          calle: order.address.calle,
+          ciudad: order.address.ciudad,
+          barrio: order.address.barrio ?? undefined,
+          referencia: order.address.referencia ?? undefined,
+        } : null,
         contactWhatsapp: config?.contact_whatsapp ?? undefined,
+        contactPhone: config?.contact_phone ?? undefined,
       })
     ));
 
     await resend.emails.send({
-      from: `${config?.store_name ?? "Tienda"} <onboarding@resend.dev>`,
+      from,
       to: [userRecord.email],
       subject: `¡Recibimos tu pedido #${order.id.slice(-8).toUpperCase()}! - ${config?.store_name}`,
       html: clientHtml,
@@ -141,7 +154,12 @@ export async function POST(request: NextRequest) {
           },
           items: emailItems,
           total: Number(order.total),
-          address: order.address,
+          address: order.address ? {
+            calle: order.address.calle,
+            ciudad: order.address.ciudad,
+            barrio: order.address.barrio ?? undefined,
+            referencia: order.address.referencia ?? undefined,
+          } : null,
           ruc: ruc_factura,
           denominacion: denominacion_factura,
           notasCliente: notas_cliente,
@@ -150,7 +168,7 @@ export async function POST(request: NextRequest) {
       ));
 
       await resend.emails.send({
-        from: `${config.store_name} <onboarding@resend.dev>`,
+        from,
         to: [config.contact_email],
         subject: `Nueva orden #${order.id.slice(-8).toUpperCase()} de ${userRecord.nombre} ${userRecord.apellido}`,
         html: adminHtml,
