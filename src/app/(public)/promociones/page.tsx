@@ -3,6 +3,7 @@ import { Tag } from "lucide-react";
 import { PromotionCard } from "@/components/promotions/PromotionCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prisma } from "@/lib/prisma";
+import { serialize } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ async function PromotionsContent() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {promotions.map((promo) => (
+      {serialize(promotions).map((promo) => (
         <PromotionCard key={promo.id} promotion={promo} />
       ))}
     </div>

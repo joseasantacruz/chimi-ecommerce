@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
-import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { OrderConfirmationClient } from "@/emails/OrderConfirmationClient";
 import { OrderConfirmationAdmin } from "@/emails/OrderConfirmationAdmin";
+import { sendEmail } from "@/lib/resend-send";
 import React from "react";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -132,12 +130,13 @@ export async function POST(request: NextRequest) {
       })
     ));
 
-    await resend.emails.send({
+    const storeName = config?.store_name ?? "Tienda";
+    await sendEmail({
       from,
       to: [userRecord.email],
-      subject: `¡Recibimos tu pedido #${order.id.slice(-8).toUpperCase()}! - ${config?.store_name}`,
+      subject: `¡Recibimos tu pedido #${order.id.slice(-8).toUpperCase()}! - ${storeName}`,
       html: clientHtml,
-    });
+    }, storeName);
 
     if (config?.contact_email) {
       const adminHtml = String(render(
@@ -167,12 +166,12 @@ export async function POST(request: NextRequest) {
         })
       ));
 
-      await resend.emails.send({
+      await sendEmail({
         from,
         to: [config.contact_email],
         subject: `Nueva orden #${order.id.slice(-8).toUpperCase()} de ${userRecord.nombre} ${userRecord.apellido}`,
         html: adminHtml,
-      });
+      }, storeName);
     }
   } catch (emailError) {
     console.error("Email error:", emailError);

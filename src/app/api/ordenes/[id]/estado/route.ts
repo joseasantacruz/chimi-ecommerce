@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
-import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { OrderStatusUpdate } from "@/emails/OrderStatusUpdate";
+import { sendEmail } from "@/lib/resend-send";
 import React from "react";
 import type { OrderStatus } from "@prisma/client";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient();
@@ -42,14 +40,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   // Email al cliente
   try {
     const config = await prisma.store_config.findFirst();
+    const storeName = config?.store_name ?? "Tienda";
     const senderEmail = (config as typeof config & { sender_email?: string | null })?.sender_email;
     const from = senderEmail
-      ? `${config?.store_name ?? "Tienda"} <${senderEmail}>`
-      : `${config?.store_name ?? "Tienda"} <onboarding@resend.dev>`;
+      ? `${storeName} <${senderEmail}>`
+      : `${storeName} <onboarding@resend.dev>`;
 
     const emailHtml = String(render(
       React.createElement(OrderStatusUpdate, {
-        storeName: config?.store_name ?? "Tienda",
+        storeName,
         primaryColor: config?.primary_color ?? "#C8511B",
         clientName: `${currentOrder.user.nombre ?? ""} ${currentOrder.user.apellido ?? ""}`.trim(),
         orderId: currentOrder.id,
@@ -66,12 +65,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       })
     ));
 
-    await resend.emails.send({
+    await sendEmail({
       from,
       to: [currentOrder.user.email],
-      subject: `Tu pedido #${currentOrder.id.slice(-8).toUpperCase()} fue actualizado - ${config?.store_name}`,
+      subject: `Tu pedido #${currentOrder.id.slice(-8).toUpperCase()} fue actualizado - ${storeName}`,
       html: emailHtml,
-    });
+    }, storeName);
   } catch (emailError) {
     console.error("Email error:", emailError);
   }

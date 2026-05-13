@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductsTable } from "./ProductsTable";
 import { prisma } from "@/lib/prisma";
+import { serialize } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Productos — Admin" };
@@ -27,7 +28,7 @@ export default async function AdminProductsPage() {
           </Button>
         </Link>
       </div>
-      <ProductsTable data={products} />
+      <ProductsTable data={serialize(products)} />
     </div>
   );
 }

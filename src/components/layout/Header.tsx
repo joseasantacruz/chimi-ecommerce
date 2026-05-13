@@ -11,6 +11,9 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { store_config } from "@prisma/client";
 
+// Singleton para que el onAuthStateChange no se registre/cancele en cada render
+const supabase = createClient();
+
 interface HeaderProps {
   config: store_config | null;
 }
@@ -22,7 +25,6 @@ export function Header({ config }: HeaderProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     setMounted(true);
@@ -30,19 +32,40 @@ export function Header({ config }: HeaderProps) {
 
   useEffect(() => {
     const fetchProfile = async (userId: string) => {
-      const { data: ud } = await supabase.from("users").select("rol, nombre").eq("id", userId).single();
-      setIsAdmin(ud?.rol === "admin");
-      return ud?.nombre ?? null;
+      // Primero intenta via Supabase client (RLS), si falla usa el endpoint Prisma
+      const { data: ud, error } = await supabase
+        .from("users")
+        .select("rol, nombre")
+        .eq("id", userId)
+        .single();
+
+      if (!error && ud) {
+        setIsAdmin(ud.rol === "admin");
+        return ud.nombre ?? null;
+      }
+
+      // Fallback cuando RLS bloquea (ej: "permission denied for schema public")
+      try {
+        const res = await fetch(`/api/auth/check?uid=${userId}`);
+        if (res.ok) {
+          const d = await res.json();
+          setIsAdmin(d.rol === "admin");
+          const nombre = d.nombre ?? (d.apellido ? `${d.nombre ?? ""} ${d.apellido}`.trim() : null);
+          return nombre || null;
+        }
+      } catch { /* ignorar */ }
+
+      return null;
     };
 
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (data.user) {
-        const nombre = await fetchProfile(data.user.id);
-        setUser({ email: data.user.email, nombre });
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const nombre = await fetchProfile(session.user.id);
+        setUser({ email: session.user.email, nombre });
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!session) {
         setUser(null);
         setIsAdmin(false);
@@ -53,7 +76,7 @@ export function Header({ config }: HeaderProps) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

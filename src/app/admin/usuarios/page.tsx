@@ -6,17 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
-import { Loader2, Mail, KeyRound } from "lucide-react";
+import { Loader2, Mail, KeyRound, Pencil } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { users } from "@prisma/client";
 
-type EnrichedUser = users & { email_confirmado: boolean };
+type EnrichedUser = users;
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<EnrichedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const router = useRouter();
 
   const load = () => {
     setError(null);
@@ -88,11 +90,11 @@ export default function AdminUsersPage() {
       ),
     },
     {
-      accessorKey: "email_confirmado",
+      accessorKey: "email_verificado",
       header: "Email",
       cell: ({ row }) => (
-        <Badge variant={row.original.email_confirmado ? "default" : "outline"}>
-          {row.original.email_confirmado ? "Verificado" : "Pendiente"}
+        <Badge variant={row.original.email_verificado ? "default" : "outline"}>
+          {row.original.email_verificado ? "Verificado" : "Pendiente"}
         </Badge>
       ),
     },
@@ -119,6 +121,9 @@ export default function AdminUsersPage() {
         const isResetLoading = actionLoading === `reset-${u.id}`;
         return (
           <div className="flex flex-wrap gap-1">
+            <Button size="sm" variant="outline" onClick={() => router.push(`/admin/usuarios/${u.id}`)}>
+              <Pencil className="h-3 w-3 mr-1" />Editar
+            </Button>
             <Button size="sm" variant="outline" onClick={() => toggleRole(u)}>
               {u.rol === "admin" ? "→ Cliente" : "→ Admin"}
             </Button>
@@ -129,7 +134,7 @@ export default function AdminUsersPage() {
             >
               {u.activo ? "Desactivar" : "Activar"}
             </Button>
-            {!u.email_confirmado && (
+            {!u.email_verificado && (
               <Button
                 size="sm"
                 variant="outline"

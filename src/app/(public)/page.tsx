@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ProductGrid } from "@/components/products/ProductGrid";
 import { PromotionBanner } from "@/components/promotions/PromotionBanner";
 import { prisma } from "@/lib/prisma";
+import { serialize } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -106,14 +107,14 @@ export default async function HomePage() {
                 </Button>
               </Link>
             </div>
-            <ProductGrid products={featuredProducts} />
+            <ProductGrid products={serialize(featuredProducts)} />
           </div>
         </section>
       )}
 
       {/* Promociones activas */}
       {activePromotions.length > 0 && (
-        <PromotionBanner promotions={activePromotions} subtitle={config?.promociones_subtitle} />
+        <PromotionBanner promotions={serialize(activePromotions)} subtitle={config?.promociones_subtitle} />
       )}
 
       {/* Cómo hacer un pedido */}

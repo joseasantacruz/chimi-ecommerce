@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { PromotionForm } from "@/components/admin/PromotionForm";
 import { prisma } from "@/lib/prisma";
+import { serialize } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Editar Promoción — Admin" };
@@ -22,7 +23,7 @@ export default async function EditPromotionPage({ params }: { params: { id: stri
   return (
     <div className="max-w-3xl">
       <h1 className="text-2xl font-bold mb-8">Editar: {promotion.nombre}</h1>
-      <PromotionForm promotion={promotion} products={products} />
+      <PromotionForm promotion={serialize(promotion)} products={serialize(products)} />
     </div>
   );
 }

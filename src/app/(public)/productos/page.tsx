@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { ProductGrid, ProductGridSkeleton } from "@/components/products/ProductGrid";
 import { prisma } from "@/lib/prisma";
+import { serialize } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ async function ProductsContent() {
     orderBy: { created_at: "desc" },
   });
 
-  return <ProductGrid products={products} />;
+  return <ProductGrid products={serialize(products)} />;
 }
 
 export default async function ProductsPage() {

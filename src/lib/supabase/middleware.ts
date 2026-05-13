@@ -45,15 +45,25 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (isAdminRoute && user) {
-    // Verificar rol admin en la base de datos
+  if ((isProtectedUser || isAdminRoute) && user) {
     const { data: userData } = await supabase
       .from("users")
-      .select("rol")
+      .select("rol, activo")
       .eq("id", user.id)
       .single();
 
-    if (!userData || userData.rol !== "admin") {
+    // Cuenta desactivada: forzar cierre de sesión
+    if (userData?.activo === false) {
+      await supabase.auth.signOut();
+      const redirectUrl = new URL("/auth/login?desactivada=1", request.url);
+      const redirectResponse = NextResponse.redirect(redirectUrl);
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value);
+      });
+      return redirectResponse;
+    }
+
+    if (isAdminRoute && userData?.rol !== "admin") {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }

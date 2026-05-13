@@ -34,6 +34,15 @@ export function RegisterForm() {
   const onSubmit = async (values: RegisterFormValues) => {
     setLoading(true);
 
+    // Verificar disponibilidad de email antes de crear en Supabase
+    const checkRes = await fetch(`/api/auth/email-disponible?email=${encodeURIComponent(values.email)}`);
+    const check = checkRes.ok ? await checkRes.json() : null;
+    if (!check?.disponible) {
+      toast.error("Ya existe una cuenta con ese email. Iniciá sesión o usá otro email.");
+      setLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,

@@ -1,5 +1,5 @@
 import {
-  Html, Head, Body, Container, Section, Heading, Text, Button, Hr, Preview,
+  Html, Head, Body, Container, Section, Heading, Text, Button, Hr, Preview, Img,
 } from "@react-email/components";
 
 interface EmailVerificationProps {
@@ -7,9 +7,10 @@ interface EmailVerificationProps {
   primaryColor: string;
   clientName: string;
   verificationUrl: string;
+  logoUrl?: string | null;
 }
 
-export function EmailVerification({ storeName, primaryColor, clientName, verificationUrl }: EmailVerificationProps) {
+export function EmailVerification({ storeName, primaryColor, clientName, verificationUrl, logoUrl }: EmailVerificationProps) {
   return (
     <Html>
       <Head />
@@ -17,6 +18,15 @@ export function EmailVerification({ storeName, primaryColor, clientName, verific
       <Body style={{ fontFamily: "Arial, sans-serif", backgroundColor: "#f5f5f5", margin: 0, padding: "20px 0" }}>
         <Container style={{ maxWidth: "600px", margin: "0 auto", backgroundColor: "#ffffff", borderRadius: "8px", overflow: "hidden" }}>
           <Section style={{ backgroundColor: primaryColor, padding: "30px", textAlign: "center" }}>
+            {logoUrl && (
+              <Img
+                src={logoUrl}
+                alt={storeName}
+                width="72"
+                height="72"
+                style={{ borderRadius: "50%", objectFit: "cover", margin: "0 auto 16px" }}
+              />
+            )}
             <Heading style={{ color: "#ffffff", margin: 0, fontSize: "24px" }}>{storeName}</Heading>
           </Section>
 

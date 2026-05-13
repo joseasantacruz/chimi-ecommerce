@@ -35,19 +35,36 @@ enum UserRole {
 }
 
 model users {
-  id            String    @id @db.Uuid
-  email         String    @unique
-  nombre        String?
-  apellido      String?
-  telefono      String?
-  ruc           String?
-  denominacion  String?
-  rol           UserRole  @default(cliente)
-  activo        Boolean   @default(true)
-  created_at    DateTime  @default(now())
+  id                  String    @id @db.Uuid
+  email               String    @unique
+  nombre              String?
+  apellido            String?
+  telefono            String?
+  ruc                 String?
+  denominacion        String?
+  rol                 UserRole  @default(cliente)
+  activo              Boolean   @default(true)
+  email_verificado    Boolean   @default(true)
+  verification_token  String?   @unique
+  created_at          DateTime  @default(now())
 
   addresses     addresses[]
   orders        orders[]
+  email_logs    email_logs[]
+}
+
+model email_logs {
+  id         String   @id @default(cuid())
+  user_id    String?  @db.Uuid
+  to         String
+  subject    String
+  tipo       String
+  estado     String   @default("enviado")
+  error_msg  String?
+  resend_id  String?
+  created_at DateTime @default(now())
+
+  user       users?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
 }
 
 model addresses {

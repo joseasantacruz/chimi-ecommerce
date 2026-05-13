@@ -46,6 +46,11 @@ export function truncate(text: string, length: number): string {
   return text.slice(0, length) + "...";
 }
 
+/** Serializa objetos Prisma a POJOs eliminando Decimal, BigInt, etc. */
+export function serialize<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
 export function hexToHslString(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MailCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,13 +15,29 @@ export default async function VerificacionPendientePage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <Card className="w-full max-w-md text-center">
         <CardHeader className="pb-2">
-          <div className="flex justify-center mb-4">
+          <div className="flex flex-col items-center gap-4 mb-2">
+            {config?.logo_url ? (
+              <Image
+                src={config.logo_url}
+                alt={config.store_name}
+                width={64}
+                height={64}
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="flex h-16 w-16 items-center justify-center rounded-full text-white font-bold text-2xl"
+                style={{ backgroundColor: config?.primary_color ?? "#C8511B" }}
+              >
+                {config?.store_name?.[0] ?? "E"}
+              </div>
+            )}
             <div
-              className="flex h-16 w-16 items-center justify-center rounded-full"
+              className="flex h-14 w-14 items-center justify-center rounded-full"
               style={{ backgroundColor: `${config?.primary_color ?? "#C8511B"}20` }}
             >
               <MailCheck
-                className="h-8 w-8"
+                className="h-7 w-7"
                 style={{ color: config?.primary_color ?? "#C8511B" }}
               />
             </div>

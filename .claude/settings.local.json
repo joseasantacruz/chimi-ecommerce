@@ -5,7 +5,14 @@
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
       "Bash(npx prisma *)",
       "Bash(npx tsc *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(curl -s http://localhost:3000/api/usuarios)",
+      "Bash(curl -s http://localhost:3000/api/admin/emails)",
+      "Bash(curl -sv http://localhost:3000/api/usuarios)",
+      "Bash(curl -sv http://localhost:3000/api/admin/emails)",
+      "Bash(node *)",
+      "Bash(curl -s http://localhost:3000/api/auth/check)",
+      "Bash(curl *)"
     ]
   }
 }

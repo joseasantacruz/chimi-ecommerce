@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,20 +12,30 @@ import { loginSchema, type LoginFormValues } from "@/lib/validations/user";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-export function LoginForm() {
+const supabase = createClient();
+
+export function LoginForm({ contactEmail }: { contactEmail?: string | null }) {
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/";
-  const supabase = createClient();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
 
+  useEffect(() => {
+    if (searchParams.get("desactivada") === "1") {
+      const msg = contactEmail
+        ? ` Contactá a ${contactEmail} para reactivar tu cuenta.`
+        : " Contactá al administrador para reactivar tu cuenta.";
+      toast.error(`Tu cuenta está desactivada.${msg}`, { duration: 8000 });
+    }
+  }, []);
+
   const onSubmit = async (values: LoginFormValues) => {
     setLoading(true);
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
@@ -37,7 +47,30 @@ export function LoginForm() {
       return;
     }
 
-    if (!data.user?.email_confirmed_at) {
+    // Verificación via Prisma: el uid viene del signIn, evita toda dependencia de RLS/cookies
+    const checkRes = await fetch(`/api/auth/check?uid=${data.user.id}`);
+
+    if (!checkRes.ok) {
+      await supabase.auth.signOut();
+      const contactMsg = contactEmail ? ` Contactá a ${contactEmail} para más información.` : " Contactá al administrador para más información.";
+      toast.error(`Tu cuenta no está activa. Es posible que no hayas verificado tu email o que haya sido desactivada.${contactMsg}`, { duration: 8000 });
+      setLoading(false);
+      return;
+    }
+
+    const check = await checkRes.json();
+
+    if (check?.activo === false) {
+      await supabase.auth.signOut();
+      const msg = contactEmail
+        ? ` Contactá a ${contactEmail} para reactivar tu cuenta.`
+        : " Contactá al administrador para reactivar tu cuenta.";
+      toast.error(`Tu cuenta está desactivada.${msg}`, { duration: 8000 });
+      setLoading(false);
+      return;
+    }
+
+    if (check?.email_verificado === false) {
       await supabase.auth.signOut();
       toast.error("Debés confirmar tu email antes de iniciar sesión. Revisá tu casilla de correo.");
       setLoading(false);
@@ -45,8 +78,7 @@ export function LoginForm() {
     }
 
     toast.success("Bienvenido");
-    router.push(redirect);
-    router.refresh();
+    window.location.href = redirect;
   };
 
   return (

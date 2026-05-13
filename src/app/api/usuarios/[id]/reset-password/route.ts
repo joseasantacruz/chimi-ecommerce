@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { Resend } from "resend";
 import { render } from "@react-email/render";
 import { PasswordReset } from "@/emails/PasswordReset";
+import { sendEmail } from "@/lib/resend-send";
+import { logEmail } from "@/lib/email-log";
 import React from "react";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   const supabase = await createClient();
@@ -32,27 +31,31 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "No se pudo generar el enlace de recuperación" }, { status: 500 });
   }
 
-  const config = await prisma.store_config.findFirst();
-  const fromEmail = (config as typeof config & { sender_email?: string | null })?.sender_email;
-  const from = fromEmail
-    ? `${config?.store_name ?? "Tienda"} <${fromEmail}>`
-    : `${config?.store_name ?? "Tienda"} <onboarding@resend.dev>`;
+  const subject = `Restablecer contraseña`;
 
-  const html = String(render(
-    React.createElement(PasswordReset, {
-      storeName: config?.store_name ?? "Tienda",
-      primaryColor: config?.primary_color ?? "#C8511B",
-      clientName: `${target.nombre ?? ""} ${target.apellido ?? ""}`.trim() || target.email,
-      resetUrl: linkData.properties.action_link,
-    })
-  ));
+  try {
+    const config = await prisma.store_config.findFirst();
+    const storeName = config?.store_name ?? "Tienda";
+    const fromEmail = (config as typeof config & { sender_email?: string | null })?.sender_email;
+    const from = fromEmail
+      ? `${storeName} <${fromEmail}>`
+      : `${storeName} <onboarding@resend.dev>`;
 
-  await resend.emails.send({
-    from,
-    to: [target.email],
-    subject: `Restablecer contraseña — ${config?.store_name ?? "Tienda"}`,
-    html,
-  });
+    const html = String(render(
+      React.createElement(PasswordReset, {
+        storeName,
+        primaryColor: config?.primary_color ?? "#C8511B",
+        clientName: `${target.nombre ?? ""} ${target.apellido ?? ""}`.trim() || target.email,
+        resetUrl: linkData.properties.action_link,
+      })
+    ));
 
-  return NextResponse.json({ ok: true });
+    const { id: resendId } = await sendEmail({ from, to: [target.email], subject, html }, storeName);
+    await logEmail({ to: target.email, subject, tipo: "reset_password", userId: target.id, resendId });
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    await logEmail({ to: target.email, subject, tipo: "reset_password", userId: target.id, error: msg });
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }

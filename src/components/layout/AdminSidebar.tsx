@@ -10,6 +10,7 @@ import {
   Users,
   Settings,
   ChevronLeft,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/admin/promociones", icon: Tag, label: "Promociones" },
   { href: "/admin/ordenes", icon: ShoppingBag, label: "Órdenes" },
   { href: "/admin/usuarios", icon: Users, label: "Usuarios" },
+  { href: "/admin/emails", icon: Mail, label: "Log emails" },
   { href: "/admin/configuracion", icon: Settings, label: "Configuración" },
 ];
 
